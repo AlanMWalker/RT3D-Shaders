@@ -81,6 +81,7 @@ void VSMain(const VSInput input, out PSInput output)
 	output.pos = mul(input.pos, g_WVP);
 	output.normal = input.normal;
 	{
+		//Uncomment to enable morphing landscape
 		//output.pos.y *= tan(radians(g_frameCount));
 		//morph landscape
 	}
@@ -91,13 +92,24 @@ void VSMain(const VSInput input, out PSInput output)
 void PSMain(const PSInput input, out PSOutput output)
 {
 	const float lightIntensity = 0.5f;
+	const float smallNum = 0.1f;
+
 	//output.colour = input.colour;	// 'return' the colour value for this fragment.
-	float dp = 0.0f;
-	for (int i = 0; i < g_numLights; ++i)
 	{
-		dp += dot(g_lightDirections[i], input.normal);
-		output.colour += lightIntensity * input.colour * dp;
+		//Uncomment for lighting
+		float dp = 0.0f;
+		for (int i = 0; i < g_numLights; ++i)
+		{
+			dp += dot(g_lightDirections[i], input.normal);
+			output.colour += lightIntensity * input.colour * dp;
+			// UNCOMMENT FOR CRAZY PATTERN
+			//output.colour.x += sin(radians((dp * g_frameCount)));
+			//output.colour.y += sin(radians((dp * g_frameCount)));
+			//output.colour.z += cos(radians((dp * g_frameCount)));
+
+		}
 	}
 	output.colour.w = 1.0f;
-	//output.colour = clamp(0.0f, 1.0f, output.colour);
+
+
 }
