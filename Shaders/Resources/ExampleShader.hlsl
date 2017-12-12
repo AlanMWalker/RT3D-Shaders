@@ -101,13 +101,16 @@ void PSMain(const PSInput input, out PSOutput output)
 		for (int i = 0; i < g_numLights; ++i)
 		{
 			dp += dot(g_lightDirections[i], input.normal);
-			output.colour += lightIntensity * input.colour * dp;
 			// UNCOMMENT FOR CRAZY PATTERN
 			//output.colour.x += sin(radians((dp * g_frameCount)));
 			//output.colour.y += sin(radians((dp * g_frameCount)));
 			//output.colour.z += cos(radians((dp * g_frameCount)));
+			//output.colour = lightIntensity * input.colour * dp;
+			
 
 		}
+		//comment out for crazy pattern
+		output.colour = lightIntensity * input.colour * dp;
 	}
 	output.colour.w = 1.0f;
 
