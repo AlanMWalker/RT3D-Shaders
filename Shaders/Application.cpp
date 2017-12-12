@@ -141,7 +141,7 @@ void Application::HandleRender()
 	XMMATRIX matProj;
 	matProj = XMMatrixPerspectiveFovLH(float(XM_PI / 4), 2, 1.5f, 5000.0f);
 
-	this->EnableDirectionalLight(1, XMFLOAT3(-1.f, -1.f, -1.f), XMFLOAT3(0.55f, 0.55f, 0.65f));
+	this->EnableDirectionalLight(1, XMFLOAT3(-1.f, -1.f, -1.f), XMFLOAT3(1.55f, 1.55f, 1.65f));
 
 	this->SetViewMatrix(matView);
 	this->SetProjectionMatrix(matProj);

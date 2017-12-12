@@ -69,50 +69,72 @@ Texture2D g_texture2;
 // Define a state setting 'slot' for the sampler e.g. wrap/clamp modes, filtering etc.
 SamplerState g_sampler;
 
-void morphLandscape(out float4 pos)
-{
-
-}
-
 // The vertex shader entry point. This function takes a single vertex and transforms it for the rasteriser.
 void VSMain(const VSInput input, out PSInput output)
 {
 	//const float dt = 0.016f;
+	const float size = 512;
+	float2 pixelPos = float2((input.pos.x + size) / (size * 2), (input.pos.z + size) / (size * 2));
+	pixelPos.y = 1.0 - pixelPos.y;
+
+	float4 sampled = g_materialMap.SampleLevel(g_sampler, pixelPos, 0);
 	output.pos = mul(input.pos, g_WVP);
 	output.normal = input.normal;
+	output.tex = input.tex;
+	output.colour = sampled;
+
 	{
 		//Uncomment to enable morphing landscape
 		//output.pos.y *= tan(radians(g_frameCount));
 		//morph landscape
 	}
-	output.colour = input.colour;
 }
 
 // The pixel shader entry point. This function writes out the fragment/pixel colour.
 void PSMain(const PSInput input, out PSOutput output)
 {
-	const float lightIntensity = 0.5f;
+	const float lightIntensity = 0.05f;
 	const float smallNum = 0.1f;
 
+	const float size = 512;
+	float2 pixelPos = float2((input.pos.x + size) / (size * 2), (input.pos.z * size) / (size * 2));
+
+	const float4 mossCol = g_texture0.Sample(g_sampler, input.tex);
+	const float4 grassCol = g_texture1.Sample(g_sampler, input.tex);
+	const float4 asphaltCol = g_texture2.Sample(g_sampler, input.tex);
+
+
+	//
+	output.colour = float4(0.0f, 0.0f, 0.0f, 1.0f);
+	output.colour.r = lerp(output.colour.r, mossCol.r, input.colour.r) + lerp(output.colour.r, grassCol.r, input.colour.g) + lerp(output.colour.r, asphaltCol.r, input.colour.b);
+	output.colour.g = lerp(output.colour.g, mossCol.g, input.colour.r) + lerp(output.colour.g, grassCol.g, input.colour.g) + lerp(output.colour.g, asphaltCol.g, input.colour.b);
+	output.colour.b = lerp(output.colour.b, mossCol.b, input.colour.r) + lerp(output.colour.b, grassCol.b, input.colour.g) + lerp(output.colour.b, asphaltCol.b, input.colour.b);
+
+
+	//output.colour = 
 	//output.colour = input.colour;	// 'return' the colour value for this fragment.
+
 	{
 		//Uncomment for lighting
-		float dp = 0.0f;
+		float3 summedIntensity = float3(0.0f, 0.0f, 0.0f);
 		for (int i = 0; i < g_numLights; ++i)
 		{
-			dp += dot(g_lightDirections[i], input.normal);
+			float dp = dot(normalize(g_lightDirections[i]), normalize(input.normal));
+			dp = max(0, dp);
+			summedIntensity += (dp * g_lightColours[i]);
 			// UNCOMMENT FOR CRAZY PATTERN
 			//output.colour.x += sin(radians((dp * g_frameCount)));
 			//output.colour.y += sin(radians((dp * g_frameCount)));
 			//output.colour.z += cos(radians((dp * g_frameCount)));
 			//output.colour = lightIntensity * input.colour * dp;
-			
+
 
 		}
+		output.colour.rgb *= summedIntensity;
 		//comment out for crazy pattern
-		output.colour = lightIntensity * input.colour * dp;
+		//output.colour += summedIntensity;
+		output.colour.w = 1.0f;
 	}
-	output.colour.w = 1.0f;
 
 
 }
